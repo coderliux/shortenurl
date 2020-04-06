@@ -1,0 +1,37 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto8
+    commands:
+      - echo Entered the install phase...
+      - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2&
+      - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
+    finally:
+      - echo This always runs even if the update or install command fails
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - $(aws ecr get-login --no-include-email --region ap-southeast-1)
+  build:
+    commands:
+      - echo Entered the build phase...
+      - echo Build started on `date`
+      - ./gradlew build jacocoTestReport bootJar
+      - echo Building the Docker image...
+      - docker build -t shortenurl:v1 .
+      - docker tag shortenurl:v1 069465083683.dkr.ecr.ap-southeast-1.amazonaws.com/shortenurl:v1
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker image...
+      - docker push 069465083683.dkr.ecr.ap-southeast-1.amazonaws.com/shortenurl:v1
+
+reports:
+  arn:aws:codebuild:ap-southeast-1:069465083683:report-group/report: #surefire junit reports
+    files:
+      - '**/*'
+    base-directory: 'build/test-results/test'
+    file-format: JunitXml
+    discard-paths: false

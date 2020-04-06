@@ -1,0 +1,47 @@
+plugins {
+    id 'org.springframework.boot' version '2.2.2.RELEASE'
+    id 'java'
+    id 'jacoco'
+    id 'war'
+}
+
+
+repositories {
+    mavenLocal()
+    maven{ url 'http://maven.oschina.net/content/groups/public/'}
+    mavenCentral()
+}
+
+apply plugin: 'io.spring.dependency-management'
+
+group = 'com.aws.liujie'
+version = '0.1'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+dependencies {
+
+    implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation ("org.springframework.boot:spring-boot-starter-web"){
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+        exclude group: 'org.apache.tomcat.embed'
+    }
+    implementation group: 'com.google.guava', name: 'guava', version: '28.2-jre'
+    implementation("io.springfox:springfox-swagger2:2.9.2")
+
+    implementation 'com.github.xiaoymin:swagger-bootstrap-ui:1.9.0'
+
+    compile group: 'software.amazon.awssdk', name: 'dynamodb', version: '2.11.6'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testCompile("org.springframework.boot:spring-boot-starter-test")
+    testCompile("junit:junit:4.12")
+}
